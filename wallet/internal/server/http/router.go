@@ -13,8 +13,10 @@ func NewRouter(s *Server) *mux.Router {
 	sec.Use(s.jwtWrapper.AuthMiddleware)
 	sec.HandleFunc("", s.CreateWallet).Methods("POST")
 	sec.HandleFunc("/{id}", s.GetWalletByID).Methods("GET")
+	sec.HandleFunc("/{id}/transactions", s.GetWalletTransactionsById).Methods("GET")
 	trn := r.PathPrefix("/transactions").Subrouter()
 	trn.Use(s.jwtWrapper.AuthMiddleware)
+	trn.HandleFunc("", s.GetTransactions).Methods("GET")
 	trn.HandleFunc("", s.CreateTransactions).Methods("PUT")
 
 	return r

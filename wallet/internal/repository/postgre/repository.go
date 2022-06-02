@@ -70,6 +70,52 @@ func (r *Repository) GetWalletByID(id string) (*Wallet, error) {
 	return wallet, nil
 }
 
+func (r *Repository) GetWalletTransactionsById(id string) ([]*Transaction, error) {
+	rows, err := r.Conn.Query("SELECT * FROM transactions WHERE credit_wallet_id=$1 or debit_wallet_id=$1", id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactions := make([]*Transaction, 0)
+
+	for rows.Next() {
+		transaction := new(Transaction)
+		err := rows.Scan(&transaction.Id, &transaction.CreditWalletId, &transaction.DebitWalletId, &transaction.Amount, &transaction.Type, &transaction.FeeAmount, &transaction.FeeWalletId, &transaction.CreditUserId, &transaction.DebitUserId)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, transaction)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}
+
+func (r *Repository) GetTransactions() ([]*Transaction, error) {
+	rows, err := r.Conn.Query("SELECT * FROM transactions")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactions := make([]*Transaction, 0)
+
+	for rows.Next() {
+		transaction := new(Transaction)
+		err := rows.Scan(&transaction.Id, &transaction.CreditWalletId, &transaction.DebitWalletId, &transaction.Amount, &transaction.Type, &transaction.FeeAmount, &transaction.FeeWalletId, &transaction.CreditUserId, &transaction.DebitUserId)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, transaction)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}
+
 func (r *Repository) CreateTransaction(transaction *Transaction) error {
 	ctx := context.Background()
 
@@ -78,7 +124,7 @@ func (r *Repository) CreateTransaction(transaction *Transaction) error {
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "UPDATE wallets SET balance=balance-$1 WHERE id=$2", transaction.Amount, transaction.CreditWalletId)
+	_, err = tx.ExecContext(ctx, "UPDATE wallets SET balance=balance-$1 WHERE id=$2", transaction.Amount+2, transaction.CreditWalletId)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -90,7 +136,13 @@ func (r *Repository) CreateTransaction(transaction *Transaction) error {
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "INSERT INTO transactions (credit_wallet_id,debit_wallet_id,amount,type,fee_amount,fee_wallet_id,credit_user_id, debit_user_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)", transaction.CreditWalletId, transaction.DebitWalletId, transaction.Amount, 1, 2, "85aa7525-4fdb-4436-a600-66ffc55e0f65", transaction.CreditUserId, transaction.DebitUserId)
+	_, err = tx.ExecContext(ctx, "UPDATE wallets SET balance=balance+$1 WHERE id=$2", 2, "85aa7525-4fdb-4436-a600-66ffc55e0f65")
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, "INSERT INTO transactions (credit_wallet_id,debit_wallet_id,amount,type,fee_amount,fee_wallet_id,credit_user_id, debit_user_id) VALUES ($1,$2,$3,$4,$5,$6,(SELECT user_id FROM wallets WHERE id=$7),(SELECT user_id FROM wallets WHERE id=$8))", transaction.CreditWalletId, transaction.DebitWalletId, transaction.Amount, 1, 2, "85aa7525-4fdb-4436-a600-66ffc55e0f65", transaction.CreditWalletId, transaction.DebitWalletId)
 	if err != nil {
 		tx.Rollback()
 		return err

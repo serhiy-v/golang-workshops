@@ -12,20 +12,21 @@ import (
 	"github.com/workshops/wallet/internal/services/wallet"
 )
 
-//type Validator interface {
-//	Validate(interface{}) error
-//}
+type Validator interface {
+	Validate(interface{}) error
+}
 
 type Server struct {
-	//valid Validator
+	valid      Validator
 	jwtWrapper *auth.JwtWrapper
 	service    *wallet.Service
 }
 
-func NewServer(service *wallet.Service, jwtWrapper *auth.JwtWrapper) *Server {
+func NewServer(service *wallet.Service, jwtWrapper *auth.JwtWrapper, validator Validator) *Server {
 	return &Server{
 		service:    service,
 		jwtWrapper: jwtWrapper,
+		valid:      validator,
 	}
 }
 
@@ -43,6 +44,11 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		log.Printf("Unable to get user from request: %v\n", err)
+	}
+	err = s.valid.Validate(user)
+	if err != nil {
+		log.Printf("Bad input: %v\n", err)
+		return
 	}
 	token, err := s.jwtWrapper.GenerateToken(user.Name)
 	err = s.service.CreateUser(token)
@@ -68,6 +74,11 @@ func (s *Server) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Unable to get wallet from request: %v\n", err)
 	}
+	err = s.valid.Validate(wallet)
+	if err != nil {
+		log.Printf("Bad input: %v\n", err)
+		return
+	}
 	err = s.service.CreateWallet(&wallet)
 	if err != nil {
 		log.Printf("Unable to create: %v\n", err)
@@ -86,11 +97,38 @@ func (s *Server) GetWalletByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(wallet)
 }
 
+func (s *Server) GetWalletTransactionsById(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id := params["id"]
+	transactions, err := s.service.GetWalletTransactionsById(id)
+	if err != nil {
+		log.Printf("Unable to get transactions : %v\n", err)
+	}
+	for _, transaction := range transactions {
+		json.NewEncoder(w).Encode(transaction)
+	}
+}
+
+func (s *Server) GetTransactions(w http.ResponseWriter, r *http.Request) {
+	transactions, err := s.service.GetTransactions()
+	if err != nil {
+		log.Printf("Unable to get transactions : %v\n", err)
+	}
+	for _, transaction := range transactions {
+		json.NewEncoder(w).Encode(transaction)
+	}
+}
+
 func (s *Server) CreateTransactions(w http.ResponseWriter, r *http.Request) {
 	var transaction postgre.Transaction
 	err := json.NewDecoder(r.Body).Decode(&transaction)
 	if err != nil {
 		log.Printf("Unable to get transaction from request: %v\n", err)
+	}
+	err = s.valid.Validate(transaction)
+	if err != nil {
+		log.Printf("Bad input: %v\n", err)
+		return
 	}
 	err = s.service.CreateTransaction(&transaction)
 	if err != nil {

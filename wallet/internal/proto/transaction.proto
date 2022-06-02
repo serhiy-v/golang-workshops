@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package transaction;
+
+option go_package = "./;pb";
+
+message Transaction{
+  string id = 1;
+  string creditWalletId = 2;
+  string debitWalletId = 3;
+  int32 amount = 4;
+  int32 type = 5;
+  int32 feeAmount = 6;
+  string feeWalletId = 7;
+  string creditUserId = 8;
+  string debitUserId = 9;
+}
+
+message GetTransactionRequest{}
+
+message GetTransactionResponse{
+  repeated Transaction transaction = 1;
+}
+
+message CreateTransactionRequest{
+  string creditWalletId = 1;
+  string debitWalletId = 2;
+  int32 amount = 3;
+}
+
+message CreateTransactionResponse{
+  string creditWalletId = 1;
+  string debitWalletId = 2;
+  int32 amount = 3;
+}
+
+message GetWalletTransactionsByIdRequest{
+  string id = 1;
+}
+
+message GetWalletTransactionsByIdResponse{
+  repeated Transaction transaction = 1;
+}
+
+service TransactionService {
+  rpc GetTransactions (GetTransactionRequest) returns (GetTransactionResponse);
+  rpc CreateTransaction (CreateTransactionRequest) returns (CreateTransactionResponse);
+  rpc GetWalletTransactionsById (GetWalletTransactionsByIdRequest) returns (GetTransactionResponse);
+}
