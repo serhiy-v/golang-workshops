@@ -11,12 +11,16 @@ type Repository struct {
 	Conn *sql.DB
 }
 
-func NewRepository(dsn string) (*Repository, error) {
+func NewRepository(conn *sql.DB) *Repository {
+	return &Repository{Conn: conn}
+}
+
+func NewPostgresDb(dsn string) (*sql.DB, error) {
 	conn, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}
-	return &Repository{Conn: conn}, nil
+	return conn, nil
 }
 
 func (r *Repository) CreateUser(token string) error {

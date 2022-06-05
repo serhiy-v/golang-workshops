@@ -32,7 +32,10 @@ func NewServer(service *wallet.Service, jwtWrapper *auth.JwtWrapper, validator V
 
 func (s *Server) RunServer() {
 	router := NewRouter(s)
-	http.ListenAndServe("localhost:8090", router)
+	addr := "localhost:8090"
+
+	log.Printf("start HTTP server at %s", addr)
+	http.ListenAndServe(addr, router)
 }
 
 func (s *Server) HandlerA(w http.ResponseWriter, r *http.Request) {
