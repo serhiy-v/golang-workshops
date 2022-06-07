@@ -543,10 +543,10 @@ var file_transaction_proto_depIdxs = []int32{
 	0, // 1: transaction.GetWalletTransactionsByIdResponse.transaction:type_name -> transaction.Transaction
 	1, // 2: transaction.TransactionService.GetTransactions:input_type -> transaction.GetTransactionRequest
 	3, // 3: transaction.TransactionService.CreateTransaction:input_type -> transaction.CreateTransactionRequest
-	5, // 4: transaction.TransactionService.GetWalletTransactionsById:input_type -> transaction.GetWalletTransactionsByIdRequest
+	5, // 4: transaction.TransactionService.GetWalletTransactionsByID:input_type -> transaction.GetWalletTransactionsByIdRequest
 	2, // 5: transaction.TransactionService.GetTransactions:output_type -> transaction.GetTransactionResponse
 	4, // 6: transaction.TransactionService.CreateTransaction:output_type -> transaction.CreateTransactionResponse
-	2, // 7: transaction.TransactionService.GetWalletTransactionsById:output_type -> transaction.GetTransactionResponse
+	2, // 7: transaction.TransactionService.GetWalletTransactionsByID:output_type -> transaction.GetTransactionResponse
 	5, // [5:8] is the sub-list for method output_type
 	2, // [2:5] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

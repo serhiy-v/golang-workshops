@@ -1,13 +1,13 @@
 package postgre
 
 type Transaction struct {
-	Id             string `json:"id"`
-	CreditWalletId string `validate:"required" json:"creditWalletId"`
-	DebitWalletId  string `validate:"required" json:"debitWalletId"`
+	ID             string `json:"id"`
+	CreditWalletID string `validate:"required" json:"creditWalletId"`
+	DebitWalletID  string `validate:"required" json:"debitWalletId"`
 	Amount         int    `validate:"required" json:"amount"`
 	Type           int    `json:"type"`
 	FeeAmount      int    `json:"feeAmount"`
-	FeeWalletId    string `json:"feeWalletId"`
-	CreditUserId   string `json:"creditUserId"`
-	DebitUserId    string `json:"debitUserId"`
+	FeeWalletID    string `json:"feeWalletId"`
+	CreditUserID   string `json:"creditUserId"`
+	DebitUserID    string `json:"debitUserId"`
 }

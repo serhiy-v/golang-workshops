@@ -41,7 +41,7 @@ func (c *walletServiceClient) CreateWallet(ctx context.Context, in *CreateWallet
 
 func (c *walletServiceClient) GetWalletById(ctx context.Context, in *GetWalledByIdRequest, opts ...grpc.CallOption) (*GetWalletByIdResponse, error) {
 	out := new(GetWalletByIdResponse)
-	err := c.cc.Invoke(ctx, "/wallet.WalletService/GetWalletById", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wallet.WalletService/GetWalletByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (UnimplementedWalletServiceServer) CreateWallet(context.Context, *CreateWal
 	return nil, status.Errorf(codes.Unimplemented, "method CreateWallet not implemented")
 }
 func (UnimplementedWalletServiceServer) GetWalletById(context.Context, *GetWalledByIdRequest) (*GetWalletByIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWalletById not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method GetWalletByID not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
 
@@ -108,7 +108,7 @@ func _WalletService_GetWalletById_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wallet.WalletService/GetWalletById",
+		FullMethod: "/wallet.WalletService/GetWalletByID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WalletServiceServer).GetWalletById(ctx, req.(*GetWalledByIdRequest))
@@ -128,7 +128,7 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _WalletService_CreateWallet_Handler,
 		},
 		{
-			MethodName: "GetWalletById",
+			MethodName: "GetWalletByID",
 			Handler:    _WalletService_GetWalletById_Handler,
 		},
 	},

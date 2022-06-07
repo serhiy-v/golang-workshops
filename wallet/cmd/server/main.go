@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 
 	"github.com/workshops/wallet/internal/middleware/auth"
 	pb "github.com/workshops/wallet/internal/proto"
 	"github.com/workshops/wallet/internal/repository/postgre"
-	"github.com/workshops/wallet/internal/server/grpcServer"
+	grpcserver "github.com/workshops/wallet/internal/server/grpcServer"
 	"github.com/workshops/wallet/internal/server/http"
 	"github.com/workshops/wallet/internal/services/validator"
 	"github.com/workshops/wallet/internal/services/wallet"
@@ -19,16 +18,16 @@ import (
 
 func main() {
 	// main server code
-	runHttp()
-	//runGrpc()
+	runHTTP()
+	// runGrpc()
 }
 
-func runHttp() {
+func runHTTP() {
 	str := "postgres://gouser:gopassword@localhost:5432/gotest?sslmode=disable"
 
 	db, err := postgre.NewPostgresDb(str)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 
 	repo := postgre.NewRepository(db)
@@ -41,20 +40,21 @@ func runHttp() {
 	server.RunServer()
 }
 
+//nolint
 func runGrpc() {
 	str := "postgres://gouser:gopassword@localhost:5432/gotest?sslmode=disable"
 
 	db, err := postgre.NewPostgresDb(str)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 
 	repo := postgre.NewRepository(db)
 	service := wallet.NewService(repo)
 	wrapper := auth.NewJwtWrapper("verysecretkey", 999)
-	interceptor := grpcServer.NewAuthInterceptor(wrapper)
+	interceptor := grpcserver.NewAuthInterceptor(wrapper)
 
-	srv := grpcServer.NewGrpcServer(service, wrapper)
+	srv := grpcserver.NewGrpcServer(service, wrapper)
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(interceptor.Unary()),
 	)

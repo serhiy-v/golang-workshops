@@ -11,6 +11,7 @@ import (
 	"github.com/workshops/wallet/internal/repository/postgre"
 )
 
+//nolint
 func TestGetUsers(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -22,12 +23,12 @@ func TestGetUsers(t *testing.T) {
 	srvc := NewService(repo)
 
 	expectedUser := []*postgre.User{
-		&postgre.User{
-			Id:    "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
+		{
+			ID:    "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
 			Token: sql.NullString{"yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOYW1lIjoic2VyaGlpIiwiZXhwIjoxNjU3MTcxMjYxfQ.p9B8ZZFmYtF6euIdDQJA9NbeCJaGCUXHxMh8wR0VyWw", true},
 		},
-		&postgre.User{
-			Id:    "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
+		{
+			ID:    "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
 			Token: sql.NullString{"yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOYW1lIjoic2VyaGlpIiwiZXhwIjoxNjU3MTcxMjYxfQ.p9B8ZZFmYtF6euIdDQJA9NbeCJaGCUXHxMh8wR0VyWw", true},
 		},
 	}
@@ -40,9 +41,9 @@ func TestGetUsers(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedUser, user)
-
 }
 
+//nolint
 func TestGetUsersError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -65,6 +66,7 @@ func TestGetUsersError(t *testing.T) {
 	assert.Equal(t, err, mockErr)
 }
 
+//nolint
 func TestCreateUsers(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -86,6 +88,7 @@ func TestCreateUsers(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+//nolint
 func TestCreateUsersError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -110,6 +113,7 @@ func TestCreateUsersError(t *testing.T) {
 	assert.Equal(t, err, mockErr)
 }
 
+//nolint
 func TestCreateWallet(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -124,16 +128,17 @@ func TestCreateWallet(t *testing.T) {
 
 	wallet := &postgre.Wallet{
 		Balance: 100,
-		UserId:  "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
+		UserID:  "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
 	}
 
-	mock.ExpectExec(regexp.QuoteMeta(q)).WithArgs(wallet.Balance, wallet.UserId).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(regexp.QuoteMeta(q)).WithArgs(wallet.Balance, wallet.UserID).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = srvc.CreateWallet(wallet)
 
 	assert.NoError(t, err)
 }
 
+//nolint
 func TestCreateWalletError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -148,12 +153,12 @@ func TestCreateWalletError(t *testing.T) {
 
 	wallet := &postgre.Wallet{
 		Balance: 100,
-		UserId:  "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
+		UserID:  "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
 	}
 
 	mockErr := errors.New("Unable to create wallet")
 
-	mock.ExpectExec(regexp.QuoteMeta(q)).WithArgs(wallet.Balance, wallet.UserId).WillReturnError(mockErr)
+	mock.ExpectExec(regexp.QuoteMeta(q)).WithArgs(wallet.Balance, wallet.UserID).WillReturnError(mockErr)
 
 	err = srvc.CreateWallet(wallet)
 
@@ -161,6 +166,7 @@ func TestCreateWalletError(t *testing.T) {
 	assert.Equal(t, err, mockErr)
 }
 
+//nolint
 func TestGetWalletById(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -174,14 +180,14 @@ func TestGetWalletById(t *testing.T) {
 	q := "SELECT id,balance,user_id FROM wallets WHERE id=$1"
 
 	expectedWallet := &postgre.Wallet{
-		Id:      "096a20c7-0b2a-475a-b175-229196f23cde",
+		ID:      "096a20c7-0b2a-475a-b175-229196f23cde",
 		Balance: 100,
-		UserId:  "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
+		UserID:  "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
 	}
 
 	id := "096a20c7-0b2a-475a-b175-229196f23cde"
 
-	mock.ExpectQuery(regexp.QuoteMeta(q)).WillReturnRows(mock.NewRows([]string{"id", "balance", "userId"}).AddRow(expectedWallet.Id, expectedWallet.Balance, expectedWallet.UserId))
+	mock.ExpectQuery(regexp.QuoteMeta(q)).WillReturnRows(mock.NewRows([]string{"id", "balance", "userId"}).AddRow(expectedWallet.ID, expectedWallet.Balance, expectedWallet.UserID))
 
 	wallet, err := srvc.GetWalletByID(id)
 
@@ -189,6 +195,7 @@ func TestGetWalletById(t *testing.T) {
 	assert.Equal(t, wallet, expectedWallet)
 }
 
+//nolint
 func TestGetWalletByIdError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -213,6 +220,7 @@ func TestGetWalletByIdError(t *testing.T) {
 	assert.Equal(t, err, mockErr)
 }
 
+//nolint
 func TestGetWalletTransactionsById(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -228,38 +236,39 @@ func TestGetWalletTransactionsById(t *testing.T) {
 	id := "ce71eb21-1312-4e29-89df-039cae56007a"
 
 	expectedTransaction := []*postgre.Transaction{
-		&postgre.Transaction{
-			Id:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
-			CreditWalletId: "ce71eb21-1312-4e29-89df-039cae56007a",
-			DebitWalletId:  "096a20c7-0b2a-475a-b175-229196f23cde",
+		{
+			ID:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
+			CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
+			DebitWalletID:  "096a20c7-0b2a-475a-b175-229196f23cde",
 			Amount:         20,
 			Type:           1,
 			FeeAmount:      3,
-			FeeWalletId:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
-			CreditUserId:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
-			DebitUserId:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
+			FeeWalletID:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
+			CreditUserID:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
+			DebitUserID:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
 		},
-		&postgre.Transaction{
-			Id:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
-			CreditWalletId: "ce71eb21-1312-4e29-89df-039cae56007a",
-			DebitWalletId:  "096a20c7-0b2a-475a-b175-229196f23cde",
+		{
+			ID:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
+			CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
+			DebitWalletID:  "096a20c7-0b2a-475a-b175-229196f23cde",
 			Amount:         20,
 			Type:           1,
 			FeeAmount:      3,
-			FeeWalletId:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
-			CreditUserId:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
-			DebitUserId:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
+			FeeWalletID:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
+			CreditUserID:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
+			DebitUserID:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
 		},
 	}
 
 	mock.ExpectQuery(regexp.QuoteMeta(q)).WithArgs(id).WillReturnRows(mock.NewRows([]string{"id", "creditWalletId", "debitWalletId", "amount", "type", "feeAmount", "feeWalletId", "creditUserId", "debitUserId"}).AddRow("a15abc6c-63c5-46a4-bf0c-f355a23edc2e", "ce71eb21-1312-4e29-89df-039cae56007a", "096a20c7-0b2a-475a-b175-229196f23cde", 20, 1, 3, "85aa7525-4fdb-4436-a600-66ffc55e0f65", "928eeecf-05ad-4e6f-ab7f-5477225b4c52", "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a").AddRow("a15abc6c-63c5-46a4-bf0c-f355a23edc2e", "ce71eb21-1312-4e29-89df-039cae56007a", "096a20c7-0b2a-475a-b175-229196f23cde", 20, 1, 3, "85aa7525-4fdb-4436-a600-66ffc55e0f65", "928eeecf-05ad-4e6f-ab7f-5477225b4c52", "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a"))
 
-	transaction, err := srvc.GetWalletTransactionsById(id)
+	transaction, err := srvc.GetWalletTransactionsByID(id)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedTransaction, transaction)
 }
 
+//nolint
 func TestGetWalletTransactionsByIdError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -278,12 +287,13 @@ func TestGetWalletTransactionsByIdError(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(q)).WithArgs(id).WillReturnError(mockErr)
 
-	_, err = srvc.GetWalletTransactionsById(id)
+	_, err = srvc.GetWalletTransactionsByID(id)
 
 	assert.Error(t, err)
 	assert.Equal(t, err, mockErr)
 }
 
+//nolint
 func TestGetransactions(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -297,27 +307,27 @@ func TestGetransactions(t *testing.T) {
 	q := "SELECT * FROM transactions"
 
 	expectedTransaction := []*postgre.Transaction{
-		&postgre.Transaction{
-			Id:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
-			CreditWalletId: "ce71eb21-1312-4e29-89df-039cae56007a",
-			DebitWalletId:  "096a20c7-0b2a-475a-b175-229196f23cde",
+		{
+			ID:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
+			CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
+			DebitWalletID:  "096a20c7-0b2a-475a-b175-229196f23cde",
 			Amount:         20,
 			Type:           1,
 			FeeAmount:      3,
-			FeeWalletId:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
-			CreditUserId:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
-			DebitUserId:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
+			FeeWalletID:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
+			CreditUserID:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
+			DebitUserID:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
 		},
-		&postgre.Transaction{
-			Id:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
-			CreditWalletId: "ce71eb21-1312-4e29-89df-039cae56007a",
-			DebitWalletId:  "096a20c7-0b2a-475a-b175-229196f23cde",
+		{
+			ID:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
+			CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
+			DebitWalletID:  "096a20c7-0b2a-475a-b175-229196f23cde",
 			Amount:         20,
 			Type:           1,
 			FeeAmount:      3,
-			FeeWalletId:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
-			CreditUserId:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
-			DebitUserId:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
+			FeeWalletID:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
+			CreditUserID:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
+			DebitUserID:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
 		},
 	}
 
@@ -329,6 +339,7 @@ func TestGetransactions(t *testing.T) {
 	assert.Equal(t, expectedTransaction, transaction)
 }
 
+//nolint
 func TestGetTransactionsError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -350,45 +361,3 @@ func TestGetTransactionsError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, err, mockErr)
 }
-
-//func TestCreateTransactions(t *testing.T) {
-//	db, mock, err := sqlmock.New()
-//	if err != nil {
-//		t.Fatal("Unable to connect")
-//	}
-//	defer db.Close()
-//	repo := postgre.NewRepository(db)
-//
-//	srvc := NewService(repo)
-//
-//	q1 := "UPDATE wallets SET balance=balance-$1 WHERE id=$2"
-//
-//	q2 := "UPDATE wallets SET balance=balance+$1 WHERE id=$2"
-//
-//	q3 := "UPDATE wallets SET balance=balance+$1 WHERE id=$2"
-//
-//	q4 := "INSERT INTO transactions (credit_wallet_id,debit_wallet_id,amount,type,fee_amount,fee_wallet_id,credit_user_id, debit_user_id) VALUES ($1,$2,$3,$4,$5,$6,(SELECT user_id FROM wallets WHERE id=$7),(SELECT user_id FROM wallets WHERE id=$8))"
-//
-//	expectedTransaction := &postgre.Transaction{
-//		Id:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
-//		CreditWalletId: "ce71eb21-1312-4e29-89df-039cae56007a",
-//		DebitWalletId:  "096a20c7-0b2a-475a-b175-229196f23cde",
-//		Amount:         20,
-//		Type:           1,
-//		FeeAmount:      3,
-//		FeeWalletId:    "85aa7525-4fdb-4436-a600-66ffc55e0f65",
-//		CreditUserId:   "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
-//		DebitUserId:    "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
-//	}
-//
-//	mock.ExpectBegin()
-//	mock.ExpectExec(regexp.QuoteMeta(q1)).WithArgs(expectedTransaction.Amount+2, expectedTransaction.CreditWalletId)
-//	mock.ExpectExec(regexp.QuoteMeta(q2)).WithArgs(expectedTransaction.Amount, expectedTransaction.DebitWalletId)
-//	mock.ExpectExec(regexp.QuoteMeta(q3)).WithArgs(expectedTransaction.FeeAmount, expectedTransaction.FeeWalletId)
-//	mock.ExpectExec(regexp.QuoteMeta(q4)).WithArgs(expectedTransaction.CreditWalletId, expectedTransaction.DebitWalletId, expectedTransaction.Amount, expectedTransaction.Type, expectedTransaction.FeeAmount, expectedTransaction.FeeWalletId, expectedTransaction.CreditUserId, expectedTransaction.DebitUserId)
-//	mock.ExpectClose()
-//
-//	err = srvc.CreateTransaction(expectedTransaction)
-//
-//	assert.NoError(t, err)
-//}

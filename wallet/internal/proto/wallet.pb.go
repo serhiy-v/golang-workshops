@@ -349,9 +349,9 @@ var file_wallet_proto_goTypes = []interface{}{
 var file_wallet_proto_depIdxs = []int32{
 	0, // 0: wallet.GetWalletByIdResponse.wallet:type_name -> wallet.Wallet
 	1, // 1: wallet.WalletService.CreateWallet:input_type -> wallet.CreateWalletRequest
-	3, // 2: wallet.WalletService.GetWalletById:input_type -> wallet.GetWalledByIdRequest
+	3, // 2: wallet.WalletService.GetWalletByID:input_type -> wallet.GetWalledByIdRequest
 	2, // 3: wallet.WalletService.CreateWallet:output_type -> wallet.CreateWalletResponse
-	4, // 4: wallet.WalletService.GetWalletById:output_type -> wallet.GetWalletByIdResponse
+	4, // 4: wallet.WalletService.GetWalletByID:output_type -> wallet.GetWalletByIdResponse
 	3, // [3:5] is the sub-list for method output_type
 	1, // [1:3] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

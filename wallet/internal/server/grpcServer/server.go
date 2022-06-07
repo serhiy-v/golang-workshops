@@ -1,4 +1,4 @@
-package grpcServer
+package grpcserver
 
 import (
 	"context"
@@ -11,12 +11,12 @@ import (
 	"github.com/workshops/wallet/internal/services/wallet"
 )
 
-//type Validator interface {
+// type Validator interface {
 //	Validate(interface{}) error
 //}
 
 type Server struct {
-	//valid Validator
+	// valid Validator
 	service    *wallet.Service
 	jwtWrapper *auth.JwtWrapper
 	pb.UserServiceServer
@@ -35,6 +35,11 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 	name := req.GetName()
 
 	token, err := s.jwtWrapper.GenerateToken(name)
+	if err != nil {
+		log.Printf("Unable to generate token: %v\n", err)
+		return nil, err
+	}
+
 	err = s.service.CreateUser(token)
 	if err != nil {
 		log.Printf("Unable to create: %v\n", err)
@@ -70,7 +75,7 @@ func (s *Server) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.Get
 func (s *Server) CreateWallet(ctx context.Context, req *pb.CreateWalletRequest) (*pb.CreateWalletResponse, error) {
 	wallet := &postgre.Wallet{
 		Balance: int(req.GetBalance()),
-		UserId:  req.GetUserId(),
+		UserID:  req.GetUserId(),
 	}
 
 	err := s.service.CreateWallet(wallet)
@@ -86,7 +91,7 @@ func (s *Server) CreateWallet(ctx context.Context, req *pb.CreateWalletRequest) 
 	return res, nil
 }
 
-func (s *Server) GetWalletById(ctx context.Context, req *pb.GetWalledByIdRequest) (*pb.GetWalletByIdResponse, error) {
+func (s *Server) GetWalletByID(ctx context.Context, req *pb.GetWalledByIdRequest) (*pb.GetWalletByIdResponse, error) {
 	id := req.GetId()
 
 	wallet, err := s.service.GetWalletByID(id)
@@ -96,9 +101,9 @@ func (s *Server) GetWalletById(ctx context.Context, req *pb.GetWalledByIdRequest
 	}
 
 	pbWallet := &pb.Wallet{
-		Id:      wallet.Id,
+		Id:      wallet.ID,
 		Balance: int32(wallet.Balance),
-		UserId:  wallet.UserId,
+		UserId:  wallet.UserID,
 	}
 
 	res := &pb.GetWalletByIdResponse{
@@ -108,7 +113,8 @@ func (s *Server) GetWalletById(ctx context.Context, req *pb.GetWalledByIdRequest
 	return res, nil
 }
 
-func (s *Server) GetTransactions(ctx context.Context, req *pb.GetTransactionRequest) (*pb.GetTransactionResponse, error) {
+func (s *Server) GetTransactions(ctx context.Context,
+	req *pb.GetTransactionRequest) (*pb.GetTransactionResponse, error) {
 	transactions, err := s.service.GetTransactions()
 	if err != nil {
 		log.Printf("Unable to get transactions : %v\n", err)
@@ -128,10 +134,11 @@ func (s *Server) GetTransactions(ctx context.Context, req *pb.GetTransactionRequ
 	return res, nil
 }
 
-func (s *Server) CreateTransaction(ctx context.Context, req *pb.CreateTransactionRequest) (*pb.CreateTransactionResponse, error) {
+func (s *Server) CreateTransaction(ctx context.Context,
+	req *pb.CreateTransactionRequest) (*pb.CreateTransactionResponse, error) {
 	transaction := &postgre.Transaction{
-		CreditWalletId: req.GetCreditWalletId(),
-		DebitWalletId:  req.GetDebitWalletId(),
+		CreditWalletID: req.GetCreditWalletId(),
+		DebitWalletID:  req.GetDebitWalletId(),
 		Amount:         int(req.GetAmount()),
 	}
 
@@ -150,10 +157,11 @@ func (s *Server) CreateTransaction(ctx context.Context, req *pb.CreateTransactio
 	return res, nil
 }
 
-func (s *Server) GetWalletTransactionsById(ctx context.Context, req *pb.GetWalletTransactionsByIdRequest) (*pb.GetTransactionResponse, error) {
+func (s *Server) GetWalletTransactionsByID(ctx context.Context,
+	req *pb.GetWalletTransactionsByIdRequest) (*pb.GetTransactionResponse, error) {
 	id := req.GetId()
 
-	transactions, err := s.service.GetWalletTransactionsById(id)
+	transactions, err := s.service.GetWalletTransactionsByID(id)
 	if err != nil {
 		log.Printf("Unable to get transactions : %v\n", err)
 		return nil, err
@@ -173,25 +181,23 @@ func (s *Server) GetWalletTransactionsById(ctx context.Context, req *pb.GetWalle
 
 func convertTransaction(transaction *postgre.Transaction) *pb.Transaction {
 	return &pb.Transaction{
-		Id:             transaction.Id,
-		CreditWalletId: transaction.CreditWalletId,
-		DebitWalletId:  transaction.DebitWalletId,
+		Id:             transaction.ID,
+		CreditWalletId: transaction.CreditWalletID,
+		DebitWalletId:  transaction.DebitWalletID,
 		Amount:         int32(transaction.Amount),
 		Type:           int32(transaction.Type),
 		FeeAmount:      int32(transaction.FeeAmount),
-		FeeWalletId:    transaction.FeeWalletId,
-		CreditUserId:   transaction.CreditUserId,
-		DebitUserId:    transaction.DebitUserId,
+		FeeWalletId:    transaction.FeeWalletID,
+		CreditUserId:   transaction.CreditUserID,
+		DebitUserId:    transaction.DebitUserID,
 	}
-
 }
 
 func convertUser(user *postgre.User) *pb.User {
 	return &pb.User{
-		Id:    user.Id,
+		Id:    user.ID,
 		Token: convertNullStr(user.Token),
 	}
-
 }
 
 func convertNullStr(s sql.NullString) string {

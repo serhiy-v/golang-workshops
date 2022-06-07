@@ -51,7 +51,7 @@ func (c *transactionServiceClient) CreateTransaction(ctx context.Context, in *Cr
 
 func (c *transactionServiceClient) GetWalletTransactionsById(ctx context.Context, in *GetWalletTransactionsByIdRequest, opts ...grpc.CallOption) (*GetTransactionResponse, error) {
 	out := new(GetTransactionResponse)
-	err := c.cc.Invoke(ctx, "/transaction.TransactionService/GetWalletTransactionsById", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/transaction.TransactionService/GetWalletTransactionsByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (UnimplementedTransactionServiceServer) CreateTransaction(context.Context, 
 	return nil, status.Errorf(codes.Unimplemented, "method CreateTransaction not implemented")
 }
 func (UnimplementedTransactionServiceServer) GetWalletTransactionsById(context.Context, *GetWalletTransactionsByIdRequest) (*GetTransactionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWalletTransactionsById not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method GetWalletTransactionsByID not implemented")
 }
 func (UnimplementedTransactionServiceServer) mustEmbedUnimplementedTransactionServiceServer() {}
 
@@ -140,7 +140,7 @@ func _TransactionService_GetWalletTransactionsById_Handler(srv interface{}, ctx 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/transaction.TransactionService/GetWalletTransactionsById",
+		FullMethod: "/transaction.TransactionService/GetWalletTransactionsByID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TransactionServiceServer).GetWalletTransactionsById(ctx, req.(*GetWalletTransactionsByIdRequest))
@@ -164,7 +164,7 @@ var TransactionService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TransactionService_CreateTransaction_Handler,
 		},
 		{
-			MethodName: "GetWalletTransactionsById",
+			MethodName: "GetWalletTransactionsByID",
 			Handler:    _TransactionService_GetWalletTransactionsById_Handler,
 		},
 	},

@@ -6,7 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// Service validates structures
+// Service validates structures.
 type Service struct {
 	validate *validator.Validate
 }
@@ -19,9 +19,11 @@ func NewValidator() *Service {
 func (s *Service) Validate(obj interface{}) error {
 	value := reflect.ValueOf(obj)
 	valueType := value.Kind()
+
 	if valueType == reflect.Ptr {
 		valueType = value.Elem().Kind()
 	}
+
 	if valueType == reflect.Struct {
 		if err := s.validate.Struct(obj); err != nil {
 			return err

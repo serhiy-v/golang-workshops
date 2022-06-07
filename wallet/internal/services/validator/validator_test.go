@@ -7,6 +7,7 @@ import (
 	"github.com/workshops/wallet/internal/repository/postgre"
 )
 
+//nolint
 func TestValidateUser(t *testing.T) {
 	validate := NewValidator()
 
@@ -18,29 +19,32 @@ func TestValidateUser(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+//nolint
 func TestValidateUserError(t *testing.T) {
 	validate := NewValidator()
 
 	user := &postgre.User{
-		Id: "test",
+		ID: "test",
 	}
 
 	err := validate.Validate(user)
 	assert.Error(t, err)
 }
 
+//nolint
 func TestValidateWallet(t *testing.T) {
 	validate := NewValidator()
 
 	wallet := &postgre.Wallet{
 		Balance: 100,
-		UserId:  "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
+		UserID:  "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
 	}
 
 	err := validate.Validate(wallet)
 	assert.NoError(t, err)
 }
 
+//nolint
 func TestValidateWalletError(t *testing.T) {
 	validate := NewValidator()
 
@@ -52,12 +56,13 @@ func TestValidateWalletError(t *testing.T) {
 	assert.Error(t, err)
 }
 
+//nolint
 func TestValidateTransaction(t *testing.T) {
 	validate := NewValidator()
 
 	transaction := &postgre.Transaction{
-		CreditWalletId: "ce71eb21-1312-4e29-89df-039cae56007a",
-		DebitWalletId:  "096a20c7-0b2a-475a-b175-229196f23cde",
+		CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
+		DebitWalletID:  "096a20c7-0b2a-475a-b175-229196f23cde",
 		Amount:         20,
 	}
 
@@ -65,11 +70,12 @@ func TestValidateTransaction(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+//nolint
 func TestValidateTransactionError(t *testing.T) {
 	validate := NewValidator()
 
 	transaction := &postgre.Transaction{
-		CreditWalletId: "ce71eb21-1312-4e29-89df-039cae56007a",
+		CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
 		Amount:         20,
 	}
 

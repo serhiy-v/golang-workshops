@@ -1,6 +1,5 @@
 package config
 
-// Application holds application configuration values
 type Application struct {
 	DB *Database
 }

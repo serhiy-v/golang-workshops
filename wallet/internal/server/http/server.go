@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -35,11 +34,7 @@ func (s *Server) RunServer() {
 	addr := "localhost:8090"
 
 	log.Printf("start HTTP server at %s", addr)
-	http.ListenAndServe(addr, router)
-}
-
-func (s *Server) HandlerA(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("hello")
+	log.Fatal(http.ListenAndServe(addr, router))
 }
 
 func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -48,26 +43,42 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Unable to get user from request: %v\n", err)
 	}
+
 	err = s.valid.Validate(user)
 	if err != nil {
 		log.Printf("Bad input: %v\n", err)
 		return
 	}
+
 	token, err := s.jwtWrapper.GenerateToken(user.Name)
+	if err != nil {
+		log.Printf("Unable to generate token: %v\n", err)
+		return
+	}
+
 	err = s.service.CreateUser(token)
 	if err != nil {
+		http.Error(w, "Unable to create user", http.StatusForbidden)
 		log.Printf("Unable to create: %v\n", err)
 		return
 	}
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Created user: " + user.Name))
 }
 
 func (s *Server) GetUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := s.service.GetUsers()
 	if err != nil {
+		http.Error(w, "Unable to get users", http.StatusForbidden)
 		log.Printf("Unable to get users : %v\n", err)
 	}
+
 	for _, user := range users {
-		json.NewEncoder(w).Encode(user)
+		err = json.NewEncoder(w).Encode(user)
+		if err != nil {
+			log.Printf("Unable to encode user: %v\n", err)
+			return
+		}
 	}
 }
 
@@ -77,48 +88,73 @@ func (s *Server) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Unable to get wallet from request: %v\n", err)
 	}
+
 	err = s.valid.Validate(wallet)
 	if err != nil {
 		log.Printf("Bad input: %v\n", err)
 		return
 	}
+
 	err = s.service.CreateWallet(&wallet)
 	if err != nil {
 		log.Printf("Unable to create: %v\n", err)
 		return
 	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(wallet)
 }
 
 func (s *Server) GetWalletByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
+
 	wallet, err := s.service.GetWalletByID(id)
 	if err != nil {
+		http.Error(w, "Unable to get wallet", http.StatusForbidden)
 		log.Printf("Unable to get wallet: %v\n", err)
 		return
 	}
-	json.NewEncoder(w).Encode(wallet)
+
+	err = json.NewEncoder(w).Encode(wallet)
+	if err != nil {
+		log.Printf("Unable to encode wallet: %v\n", err)
+		return
+	}
 }
 
-func (s *Server) GetWalletTransactionsById(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetWalletTransactionsByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
-	transactions, err := s.service.GetWalletTransactionsById(id)
+
+	transactions, err := s.service.GetWalletTransactionsByID(id)
 	if err != nil {
+		http.Error(w, "Unable to get wallet transactions", http.StatusForbidden)
 		log.Printf("Unable to get transactions : %v\n", err)
 	}
+
 	for _, transaction := range transactions {
-		json.NewEncoder(w).Encode(transaction)
+		err = json.NewEncoder(w).Encode(transaction)
+		if err != nil {
+			log.Printf("Unable to encode transaction: %v\n", err)
+			return
+		}
 	}
 }
 
 func (s *Server) GetTransactions(w http.ResponseWriter, r *http.Request) {
 	transactions, err := s.service.GetTransactions()
 	if err != nil {
+		http.Error(w, "Unable to get transactions", http.StatusForbidden)
 		log.Printf("Unable to get transactions : %v\n", err)
 	}
+
 	for _, transaction := range transactions {
-		json.NewEncoder(w).Encode(transaction)
+		err = json.NewEncoder(w).Encode(transaction)
+		if err != nil {
+			log.Printf("Unable to encode transaction: %v\n", err)
+			return
+		}
 	}
 }
 
@@ -128,15 +164,19 @@ func (s *Server) CreateTransactions(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Unable to get transaction from request: %v\n", err)
 	}
+
 	err = s.valid.Validate(transaction)
 	if err != nil {
 		log.Printf("Bad input: %v\n", err)
 		return
 	}
+
 	err = s.service.CreateTransaction(&transaction)
 	if err != nil {
+		http.Error(w, "Unable to create transaction", http.StatusForbidden)
 		log.Printf("Transaction Failled: %v\n", err)
 		return
 	}
 
+	json.NewEncoder(w).Encode(transaction)
 }
