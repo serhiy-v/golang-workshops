@@ -6,6 +6,7 @@ import (
 
 	"github.com/workshops/wallet/internal/middleware/auth"
 	pb "github.com/workshops/wallet/internal/proto"
+	"github.com/workshops/wallet/internal/repository/mongo"
 	"github.com/workshops/wallet/internal/repository/postgre"
 	grpcserver "github.com/workshops/wallet/internal/server/grpcServer"
 	"github.com/workshops/wallet/internal/server/http"
@@ -24,18 +25,27 @@ func main() {
 
 func runHTTP() {
 	str := "postgres://gouser:gopassword@localhost:5432/gotest?sslmode=disable"
+	mongoStr := "mongodb://gouser:gopassword@localhost:27017/"
 
 	db, err := postgre.NewPostgresDb(str)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	repo := postgre.NewRepository(db)
-	validate := validator.NewValidator()
-	service := wallet.NewService(repo)
-	wrapper := auth.NewJwtWrapper("verysecretkey", 999)
+	dbm, err := mongo.NewMongoDb(mongoStr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	server := http.NewServer(service, wrapper, validate)
+	repoMongo := mongo.NewRepository(dbm)
+
+	repoPostgre := postgre.NewRepository(db)
+
+	validate := validator.NewValidator()
+	servicePostgre := wallet.NewService(repoPostgre)
+	serviceMongo := wallet.NewService(repoMongo)
+	wrapper := auth.NewJwtWrapper("verysecretkey", 999)
+	server := http.NewServer(servicePostgre, serviceMongo, wrapper, validate)
 
 	server.RunServer()
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/workshops/wallet/internal/middleware/auth"
 	pb "github.com/workshops/wallet/internal/proto"
-	"github.com/workshops/wallet/internal/repository/postgre"
+	"github.com/workshops/wallet/internal/repository/models"
 	"github.com/workshops/wallet/internal/services/wallet"
 )
 
@@ -73,7 +73,7 @@ func (s *Server) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.Get
 }
 
 func (s *Server) CreateWallet(ctx context.Context, req *pb.CreateWalletRequest) (*pb.CreateWalletResponse, error) {
-	wallet := &postgre.Wallet{
+	wallet := &models.Wallet{
 		Balance: int(req.GetBalance()),
 		UserID:  req.GetUserId(),
 	}
@@ -136,7 +136,7 @@ func (s *Server) GetTransactions(ctx context.Context,
 
 func (s *Server) CreateTransaction(ctx context.Context,
 	req *pb.CreateTransactionRequest) (*pb.CreateTransactionResponse, error) {
-	transaction := &postgre.Transaction{
+	transaction := &models.Transaction{
 		CreditWalletID: req.GetCreditWalletId(),
 		DebitWalletID:  req.GetDebitWalletId(),
 		Amount:         int(req.GetAmount()),
@@ -179,7 +179,7 @@ func (s *Server) GetWalletTransactionsByID(ctx context.Context,
 	return res, nil
 }
 
-func convertTransaction(transaction *postgre.Transaction) *pb.Transaction {
+func convertTransaction(transaction *models.Transaction) *pb.Transaction {
 	return &pb.Transaction{
 		Id:             transaction.ID,
 		CreditWalletId: transaction.CreditWalletID,
@@ -193,10 +193,10 @@ func convertTransaction(transaction *postgre.Transaction) *pb.Transaction {
 	}
 }
 
-func convertUser(user *postgre.User) *pb.User {
+func convertUser(user *models.User) *pb.User {
 	return &pb.User{
 		Id:    user.ID,
-		Token: convertNullStr(user.Token),
+		Token: *user.Token, //convertNullStr
 	}
 }
 

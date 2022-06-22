@@ -23,5 +23,17 @@ services:
         volumes:
             - ./api/swagger.json:/app/swagger.json
 
+    mongo-db:
+        image: mongo
+        container_name: db_mg
+        ports:
+            - "27017:27017"
+        volumes:
+            - ~/apps/mongo:/data/db
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=gouser
+            - MONGO_INITDB_ROOT_PASSWORD=gopassword
+            - MONGO_INITDB_DATABASE=wallet
+
 volumes:
   database-data:

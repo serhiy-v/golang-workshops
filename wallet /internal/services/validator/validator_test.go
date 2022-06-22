@@ -4,14 +4,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/workshops/wallet/internal/repository/postgre"
+	"github.com/workshops/wallet/internal/repository/models"
 )
 
 //nolint
 func TestValidateUser(t *testing.T) {
 	validate := NewValidator()
 
-	user := &postgre.User{
+	user := &models.User{
 		Name: "test",
 	}
 
@@ -23,7 +23,7 @@ func TestValidateUser(t *testing.T) {
 func TestValidateUserError(t *testing.T) {
 	validate := NewValidator()
 
-	user := &postgre.User{
+	user := &models.User{
 		ID: "test",
 	}
 
@@ -35,7 +35,7 @@ func TestValidateUserError(t *testing.T) {
 func TestValidateWallet(t *testing.T) {
 	validate := NewValidator()
 
-	wallet := &postgre.Wallet{
+	wallet := &models.Wallet{
 		Balance: 100,
 		UserID:  "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
 	}
@@ -48,7 +48,7 @@ func TestValidateWallet(t *testing.T) {
 func TestValidateWalletError(t *testing.T) {
 	validate := NewValidator()
 
-	wallet := &postgre.Wallet{
+	wallet := &models.Wallet{
 		Balance: 100,
 	}
 
@@ -60,7 +60,7 @@ func TestValidateWalletError(t *testing.T) {
 func TestValidateTransaction(t *testing.T) {
 	validate := NewValidator()
 
-	transaction := &postgre.Transaction{
+	transaction := &models.Transaction{
 		CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
 		DebitWalletID:  "096a20c7-0b2a-475a-b175-229196f23cde",
 		Amount:         20,
@@ -74,7 +74,7 @@ func TestValidateTransaction(t *testing.T) {
 func TestValidateTransactionError(t *testing.T) {
 	validate := NewValidator()
 
-	transaction := &postgre.Transaction{
+	transaction := &models.Transaction{
 		CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
 		Amount:         20,
 	}

@@ -1,4 +1,4 @@
-package postgre
+package models
 
 type Transaction struct {
 	ID             string `json:"id"`
@@ -10,4 +10,5 @@ type Transaction struct {
 	FeeWalletID    string `json:"feeWalletId"`
 	CreditUserID   string `json:"creditUserId"`
 	DebitUserID    string `json:"debitUserId"`
+	Date           string `json:"date"`
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
+	"github.com/workshops/wallet/internal/repository/models"
 	"github.com/workshops/wallet/internal/repository/postgre"
 )
 
@@ -22,10 +23,12 @@ func TestGetUsers(t *testing.T) {
 
 	srvc := NewService(repo)
 
-	expectedUser := []*postgre.User{
+	token := "yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOYW1lIjoic2VyaGlpIiwiZXhwIjoxNjU3MTcxMjYxfQ.p9B8ZZFmYtF6euIdDQJA9NbeCJaGCUXHxMh8wR0VyWw"
+
+	expectedUser := []*models.User{
 		{
 			ID:    "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
-			Token: sql.NullString{"yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOYW1lIjoic2VyaGlpIiwiZXhwIjoxNjU3MTcxMjYxfQ.p9B8ZZFmYtF6euIdDQJA9NbeCJaGCUXHxMh8wR0VyWw", true},
+			Token: &token,
 		},
 		{
 			ID:    "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
@@ -126,7 +129,7 @@ func TestCreateWallet(t *testing.T) {
 
 	q := "INSERT INTO wallets (balance, user_id) VALUES ($1,$2)"
 
-	wallet := &postgre.Wallet{
+	wallet := &models.Wallet{
 		Balance: 100,
 		UserID:  "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
 	}
@@ -151,7 +154,7 @@ func TestCreateWalletError(t *testing.T) {
 
 	q := "INSERT INTO wallets (balance, user_id) VALUES ($1,$2)"
 
-	wallet := &postgre.Wallet{
+	wallet := &models.Wallet{
 		Balance: 100,
 		UserID:  "928eeecf-05ad-4e6f-ab7f-5477225b4c52",
 	}
@@ -179,7 +182,7 @@ func TestGetWalletById(t *testing.T) {
 
 	q := "SELECT id,balance,user_id FROM wallets WHERE id=$1"
 
-	expectedWallet := &postgre.Wallet{
+	expectedWallet := &models.Wallet{
 		ID:      "096a20c7-0b2a-475a-b175-229196f23cde",
 		Balance: 100,
 		UserID:  "92f0d2ea-f6ac-4b20-bb20-01062b29eb9a",
@@ -235,7 +238,7 @@ func TestGetWalletTransactionsById(t *testing.T) {
 
 	id := "ce71eb21-1312-4e29-89df-039cae56007a"
 
-	expectedTransaction := []*postgre.Transaction{
+	expectedTransaction := []*models.Transaction{
 		{
 			ID:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
 			CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
@@ -306,7 +309,7 @@ func TestGetransactions(t *testing.T) {
 
 	q := "SELECT * FROM transactions"
 
-	expectedTransaction := []*postgre.Transaction{
+	expectedTransaction := []*models.Transaction{
 		{
 			ID:             "a15abc6c-63c5-46a4-bf0c-f355a23edc2e",
 			CreditWalletID: "ce71eb21-1312-4e29-89df-039cae56007a",
