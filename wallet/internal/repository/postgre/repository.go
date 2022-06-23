@@ -7,6 +7,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 	"github.com/workshops/wallet/internal/repository/models"
 )
 
@@ -18,11 +19,11 @@ func NewRepository(conn *sql.DB) *Repository {
 	return &Repository{Conn: conn}
 }
 
-func NewPostgresDb(dsn string) (*sql.DB, error) {
+func NewPostgresDB(dsn string) (*sql.DB, error) {
 	conn, err := sql.Open("postgres", dsn)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	return conn, nil
@@ -33,7 +34,7 @@ func (r *Repository) CreateUser(token string) error {
 	_, err := r.Conn.Exec(q, token)
 
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error from db")
 	}
 
 	return nil
@@ -42,7 +43,7 @@ func (r *Repository) CreateUser(token string) error {
 func (r *Repository) GetUsers() ([]*models.User, error) {
 	rows, err := r.Conn.Query("SELECT * FROM users")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	defer rows.Close()
@@ -54,14 +55,14 @@ func (r *Repository) GetUsers() ([]*models.User, error) {
 		err := rows.Scan(&user.ID, &user.Token)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Error from db")
 		}
 
 		users = append(users, user)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	return users, nil
@@ -72,7 +73,7 @@ func (r *Repository) CreateWallet(wallet *models.Wallet) error {
 	_, err := r.Conn.Exec(q, wallet.Balance, wallet.UserID)
 
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error from db")
 	}
 
 	return nil
@@ -84,7 +85,7 @@ func (r *Repository) GetWalletByID(id string) (*models.Wallet, error) {
 	err := r.Conn.QueryRow(q, id).Scan(&wallet.ID, &wallet.Balance, &wallet.UserID)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	return wallet, nil
@@ -93,7 +94,7 @@ func (r *Repository) GetWalletByID(id string) (*models.Wallet, error) {
 func (r *Repository) GetWalletTransactionsByID(id string) ([]*models.Transaction, error) {
 	rows, err := r.Conn.Query("SELECT * FROM transactions WHERE credit_wallet_id=$1 or debit_wallet_id=$1", id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 	defer rows.Close()
 
@@ -106,14 +107,14 @@ func (r *Repository) GetWalletTransactionsByID(id string) ([]*models.Transaction
 			&transaction.CreditUserID, &transaction.DebitUserID)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Error from db")
 		}
 
 		transactions = append(transactions, transaction)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	return transactions, nil
@@ -122,7 +123,7 @@ func (r *Repository) GetWalletTransactionsByID(id string) ([]*models.Transaction
 func (r *Repository) GetTransactions() ([]*models.Transaction, error) {
 	rows, err := r.Conn.Query("SELECT * FROM transactions")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	defer rows.Close()
@@ -136,14 +137,14 @@ func (r *Repository) GetTransactions() ([]*models.Transaction, error) {
 			&transaction.CreditUserID, &transaction.DebitUserID)
 
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Error from db")
 		}
 
 		transactions = append(transactions, transaction)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	return transactions, nil
@@ -155,7 +156,7 @@ func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
 	tx, err := r.Conn.BeginTx(ctx, nil)
 
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error from db")
 	}
 
 	_, err = tx.ExecContext(ctx, "UPDATE wallets SET balance=balance-$1 WHERE id=$2",
@@ -166,7 +167,7 @@ func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
 			log.Fatalf("query failed: %v, unable to abort: %v", err, rb)
 		}
 
-		return err
+		return errors.Wrap(err, "Error from db")
 	}
 
 	_, err = tx.ExecContext(ctx, "UPDATE wallets SET balance=balance+$1 WHERE id=$2",
@@ -177,7 +178,7 @@ func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
 			log.Fatalf("query failed: %v, unable to abort: %v", err, rb)
 		}
 
-		return err
+		return errors.Wrap(err, "Error from db")
 	}
 
 	_, err = tx.ExecContext(ctx, "UPDATE wallets SET balance=balance+$1 WHERE id=$2",
@@ -187,7 +188,7 @@ func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
 			log.Fatalf("query failed: %v, unable to abort: %v", err, rb)
 		}
 
-		return err
+		return errors.Wrap(err, "Error from db")
 	}
 
 	_, err = tx.ExecContext(ctx, "INSERT INTO transactions (credit_wallet_id,debit_wallet_id,amount,"+
@@ -201,12 +202,12 @@ func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
 			log.Fatalf("query failed: %v, unable to abort: %v", err, rb)
 		}
 
-		return err
+		return errors.Wrap(err, "Error from db")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error from db")
 	}
 
 	return nil
@@ -218,14 +219,14 @@ func (r *Repository) GetWalletAmountDayByID(id string, day models.Day) (int, int
 	//badValue := 0
 	err := r.Conn.QueryRow(q1, id, day.Date).Scan(&outcomeAmount)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, errors.Wrap(err, "Error from db")
 	}
 
 	q2 := "SELECT SUM(amount) FROM transactions WHERE debit_wallet_id=$1 AND date=$2"
 	var incomeAmount int
 	err = r.Conn.QueryRow(q2, id, day.Date).Scan(&incomeAmount)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, errors.Wrap(err, "Error from db")
 	}
 
 	return outcomeAmount, incomeAmount, nil
@@ -233,18 +234,22 @@ func (r *Repository) GetWalletAmountDayByID(id string, day models.Day) (int, int
 
 func (r *Repository) GetWalletAmountWeekByID(id string, day models.Week) (int, int, error) {
 	q1 := "SELECT SUM(amount) FROM transactions WHERE credit_wallet_id=$1 AND date >= $2 AND date <= $3"
+
 	var outcomeAmount int
-	//badValue := 0
+
+	// badValue := 0
 	err := r.Conn.QueryRow(q1, id, day.DateFrom, day.DateTo).Scan(&outcomeAmount)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, errors.Wrap(err, "Error from db")
 	}
 
 	q2 := "SELECT SUM(amount) FROM transactions WHERE debit_wallet_id=$1 AND date >= $2 AND date <= $3"
+
 	var incomeAmount int
+
 	err = r.Conn.QueryRow(q2, id, day.DateFrom, day.DateTo).Scan(&incomeAmount)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, errors.Wrap(err, "Error from db")
 	}
 
 	return outcomeAmount, incomeAmount, nil

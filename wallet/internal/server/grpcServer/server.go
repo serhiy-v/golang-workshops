@@ -2,9 +2,9 @@ package grpcserver
 
 import (
 	"context"
-	"database/sql"
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/workshops/wallet/internal/middleware/auth"
 	pb "github.com/workshops/wallet/internal/proto"
 	"github.com/workshops/wallet/internal/repository/models"
@@ -37,13 +37,15 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 	token, err := s.jwtWrapper.GenerateToken(name)
 	if err != nil {
 		log.Printf("Unable to generate token: %v\n", err)
-		return nil, err
+
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	err = s.service.CreateUser(token)
 	if err != nil {
 		log.Printf("Unable to create: %v\n", err)
-		return nil, err
+
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	res := &pb.CreateUserResponse{
@@ -56,7 +58,8 @@ func (s *Server) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.Get
 	users, err := s.service.GetUsers()
 	if err != nil {
 		log.Printf("Unable to get users : %v\n", err)
-		return nil, err
+
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	var protoUsers []*pb.User
@@ -81,13 +84,15 @@ func (s *Server) CreateWallet(ctx context.Context, req *pb.CreateWalletRequest) 
 	err := s.service.CreateWallet(wallet)
 	if err != nil {
 		log.Printf("Unable to create: %v\n", err)
-		return nil, err
+
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	res := &pb.CreateWalletResponse{
 		Balance: req.GetBalance(),
 		UserId:  req.GetUserId(),
 	}
+
 	return res, nil
 }
 
@@ -97,7 +102,8 @@ func (s *Server) GetWalletByID(ctx context.Context, req *pb.GetWalledByIdRequest
 	wallet, err := s.service.GetWalletByID(id)
 	if err != nil {
 		log.Printf("Unable to get wallet: %v\n", err)
-		return nil, err
+
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	pbWallet := &pb.Wallet{
@@ -118,7 +124,8 @@ func (s *Server) GetTransactions(ctx context.Context,
 	transactions, err := s.service.GetTransactions()
 	if err != nil {
 		log.Printf("Unable to get transactions : %v\n", err)
-		return nil, err
+
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	var protoTransactions []*pb.Transaction
@@ -145,7 +152,8 @@ func (s *Server) CreateTransaction(ctx context.Context,
 	err := s.service.CreateTransaction(transaction)
 	if err != nil {
 		log.Printf("Transaction Failled: %v\n", err)
-		return nil, err
+
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	res := &pb.CreateTransactionResponse{
@@ -164,7 +172,8 @@ func (s *Server) GetWalletTransactionsByID(ctx context.Context,
 	transactions, err := s.service.GetWalletTransactionsByID(id)
 	if err != nil {
 		log.Printf("Unable to get transactions : %v\n", err)
-		return nil, err
+
+		return nil, errors.Wrap(err, "Error from db")
 	}
 	var protoTransactions []*pb.Transaction
 
@@ -200,9 +209,9 @@ func convertUser(user *models.User) *pb.User {
 	}
 }
 
-func convertNullStr(s sql.NullString) string {
-	if s.Valid {
-		return s.String
-	}
-	return ""
-}
+//func convertNullStr(s sql.NullString) string {
+//	if s.Valid {
+//		return s.String
+//	}
+//	return ""
+//}

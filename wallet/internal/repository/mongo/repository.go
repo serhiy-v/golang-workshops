@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/workshops/wallet/internal/repository/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,16 +22,17 @@ func NewRepository(conn *mongo.Client) *Repository {
 	return &Repository{Conn: conn}
 }
 
-func NewMongoDb(dsn string) (*mongo.Client, error) {
+func NewMongoDB(dsn string) (*mongo.Client, error) {
 	clientOptions := options.Client().ApplyURI(dsn)
+
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
 	return client, nil
@@ -42,7 +44,9 @@ func (r *Repository) CreateUser(token string) error {
 		ID:    primitive.NewObjectID().String(),
 		Token: &token,
 	}
+
 	_, err := collection.InsertOne(ctx, user)
+
 	return err
 }
 
@@ -54,18 +58,21 @@ func (r *Repository) GetUsers() ([]*models.User, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	for cur.Next(ctx) {
 		user := new(models.User)
 		err := cur.Decode(&user)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		users = append(users, user)
 	}
 
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
 	}
+
 	cur.Close(context.TODO())
 
 	return users, nil
@@ -88,9 +95,10 @@ func (r *Repository) GetWalletByID(id string) (*models.Wallet, error) {
 
 	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&wallet)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Error from db")
 	}
-	return wallet, err
+
+	return wallet, nil
 }
 
 func (r *Repository) GetWalletTransactionsByID(id string) ([]*models.Transaction, error) {
@@ -102,19 +110,23 @@ func (r *Repository) GetWalletTransactionsByID(id string) ([]*models.Transaction
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	for cur.Next(ctx) {
 		transaction := new(models.Transaction)
 		err := cur.Decode(&transaction)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		transactions = append(transactions, transaction)
 	}
 
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
 	}
+
 	cur.Close(context.TODO())
+
 	return transactions, nil
 }
 
@@ -126,19 +138,23 @@ func (r *Repository) GetTransactions() ([]*models.Transaction, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	for cur.Next(ctx) {
 		transaction := new(models.Transaction)
 		err := cur.Decode(&transaction)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		transactions = append(transactions, transaction)
 	}
 
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
 	}
+
 	cur.Close(context.TODO())
+
 	return transactions, nil
 }
 

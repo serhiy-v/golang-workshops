@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/pkg/errors"
 )
 
 // Service validates structures.
@@ -26,7 +27,7 @@ func (s *Service) Validate(obj interface{}) error {
 
 	if valueType == reflect.Struct {
 		if err := s.validate.Struct(obj); err != nil {
-			return err
+			return errors.Wrap(err, "Error from validator")
 		}
 	}
 	return nil

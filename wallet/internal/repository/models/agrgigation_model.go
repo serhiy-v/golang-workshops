@@ -10,6 +10,6 @@ type Week struct {
 }
 
 type Month struct {
-	Date_from string `json:"dateFrom"`
-	Date_to   string `json:"dateTo"`
+	DateFrom string `json:"dateFrom"`
+	DateTo   string `json:"dateTo"`
 }

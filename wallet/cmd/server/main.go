@@ -27,12 +27,12 @@ func runHTTP() {
 	str := "postgres://gouser:gopassword@localhost:5432/gotest?sslmode=disable"
 	mongoStr := "mongodb://gouser:gopassword@localhost:27017/"
 
-	db, err := postgre.NewPostgresDb(str)
+	db, err := postgre.NewPostgresDB(str)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	dbm, err := mongo.NewMongoDb(mongoStr)
+	dbm, err := mongo.NewMongoDB(mongoStr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func runHTTP() {
 func runGrpc() {
 	str := "postgres://gouser:gopassword@localhost:5432/gotest?sslmode=disable"
 
-	db, err := postgre.NewPostgresDb(str)
+	db, err := postgre.NewPostgresDB(str)
 	if err != nil {
 		log.Fatal(err)
 	}
