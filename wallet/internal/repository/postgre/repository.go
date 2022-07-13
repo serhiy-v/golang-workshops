@@ -213,23 +213,48 @@ func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
 	return nil
 }
 
-func (r *Repository) GetWalletAmountDayByID(id string, day models.Day) (int, int, error) {
-	q1 := "SELECT SUM(amount) FROM transactions WHERE credit_wallet_id=$1 AND date=$2"
-	var outcomeAmount int
+func (r *Repository) GetWalletAmountDayByID(id string, week models.Week) ([]*models.Day, error) {
+	q1 := "SELECT date, SUM(amount) FROM transactions WHERE credit_wallet_id=$1 " +
+		"AND date >= $2 AND date <= $3 GROUP BY date"
 	//badValue := 0
-	err := r.Conn.QueryRow(q1, id, day.Date).Scan(&outcomeAmount)
-	if err != nil {
-		return 0, 0, errors.Wrap(err, "Error from db")
+	days := make([]*models.Day, 0)
+	rows, err := r.Conn.Query(q1, id, week.DateFrom, week.DateTo)
+
+	for rows.Next() {
+		day := new(models.Day)
+		err := rows.Scan(&day.Date, &day.Outcome)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "Error from db")
+		}
+
+		days = append(days, day)
 	}
 
-	q2 := "SELECT SUM(amount) FROM transactions WHERE debit_wallet_id=$1 AND date=$2"
-	var incomeAmount int
-	err = r.Conn.QueryRow(q2, id, day.Date).Scan(&incomeAmount)
-	if err != nil {
-		return 0, 0, errors.Wrap(err, "Error from db")
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "Error from db")
 	}
 
-	return outcomeAmount, incomeAmount, nil
+	q2 := "SELECT date, SUM(amount) FROM transactions WHERE debit_wallet_id=$1 " +
+		"AND date >= $2 AND date <= $3 GROUP BY date"
+
+	rows, err = r.Conn.Query(q2, id, week.DateFrom, week.DateTo)
+	for rows.Next() {
+		incday := new(models.Day)
+		err := rows.Scan(&incday.Date, &incday.Income)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "Error from db")
+		}
+
+		for _, day := range days {
+			if day.Date == incday.Date {
+				day.Income = incday.Income
+			}
+		}
+	}
+
+	return days, nil
 }
 
 func (r *Repository) GetWalletAmountWeekByID(id string, day models.Week) (int, int, error) {

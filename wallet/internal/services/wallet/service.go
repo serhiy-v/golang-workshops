@@ -13,7 +13,7 @@ type Repository interface {
 	GetWalletTransactionsByID(id string) ([]*models.Transaction, error)
 	GetTransactions() ([]*models.Transaction, error)
 	CreateTransaction(transaction *models.Transaction) error
-	GetWalletAmountDayByID(id string, day models.Day) (int, int, error)
+	GetWalletAmountDayByID(id string, week models.Week) ([]*models.Day, error)
 	GetWalletAmountWeekByID(id string, day models.Week) (int, int, error)
 }
 
@@ -64,8 +64,8 @@ func (s *Service) CreateTransaction(transaction *models.Transaction) error {
 	return s.repo.CreateTransaction(transaction)
 }
 
-func (s *Service) GetWalletAmountDayByID(id string, day models.Day) (int, int, error) {
-	return s.repo.GetWalletAmountDayByID(id, day)
+func (s *Service) GetWalletAmountDayByID(id string, week models.Week) ([]*models.Day, error) {
+	return s.repo.GetWalletAmountDayByID(id, week)
 }
 
 func (s *Service) GetWalletAmountWeekByID(id string, day models.Week) (int, int, error) {

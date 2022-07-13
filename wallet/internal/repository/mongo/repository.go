@@ -186,11 +186,8 @@ func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
 	return nil
 }
 
-func (r *Repository) GetWalletAmountDayByID(id string, day models.Day) (int, int, error) {
-	//var zero *int
-	//value := 0
-	//zero = &value
-	return 0, 0, nil
+func (r *Repository) GetWalletAmountDayByID(id string, week models.Week) ([]*models.Day, error) {
+	return nil, nil
 }
 
 func (r *Repository) GetWalletAmountWeekByID(id string, day models.Week) (int, int, error) {

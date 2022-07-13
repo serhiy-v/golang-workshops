@@ -1,7 +1,9 @@
 package models
 
 type Day struct {
-	Date string `json:"date"`
+	Date    string `json:"date"`
+	Income  int
+	Outcome int
 }
 
 type Week struct {
