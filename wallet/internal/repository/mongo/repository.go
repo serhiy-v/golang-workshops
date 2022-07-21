@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	paginate "github.com/gobeam/mongo-go-pagination"
 	"github.com/pkg/errors"
 	"github.com/workshops/wallet/internal/repository/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -230,21 +231,59 @@ func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
 func (r *Repository) GetWalletAmountDayByID(id string, week models.Week) ([]*models.Day, error) {
 	collectionTransactions := r.Conn.Database("wallet").Collection("transactions")
 
-	matchStage := bson.D{{"$match", bson.D{{"debitwalletid", id}}}}
-	groupStage := bson.D{{"$group", bson.D{{"_id", bson.D{{"$dateFromString", bson.D{
-		{"dateString", "$b"},
-		{"format", "%d/%m/%Y"}}}}}, {"total", bson.D{{"$sum", "$amount"}}}}}}
+	//matchStage := bson.D{{"$match", bson.D{{"date", bson.D{{"$gte", week.DateFrom}, {"$lt", week.DateTo}}}}}}
+	//groupStage := bson.D{{"$group", bson.D{{"_id", bson.D{{"$dateFromString", bson.D{
+	//	{"dateString", "$b"},
+	//	{"format", "%d/%m/%Y"}}}}}, {"total", bson.D{{"$sum", "$amount"}}}}}}
+	//
+	//showInfoCursor, err := collectionTransactions.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage})
+	//if err != nil {
+	//	panic(err)
+	//}
+	//var showsWithInfo []bson.M
+	//if err = showInfoCursor.All(ctx, &showsWithInfo); err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println(showsWithInfo)
 
-	showInfoCursor, err := collectionTransactions.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage})
+	match := bson.M{"$match": bson.M{"creditwalletid": id}}
+	project := bson.M{
+		"$project": bson.M{
+			"date": "$date",
+			//"month":         bson.M{"month": "$month"},
+			"expenseAmount": "$amount",
+		},
+	}
+	group := bson.M{
+		"$group": bson.M{
+			"_id": bson.M{
+				//"month": "$month",
+				"date": "$date",
+				//"category": "$category",
+			},
+			"outcome": bson.M{"$sum": "$expenseAmount"},
+		},
+	}
+
+	days := make([]*models.Day, 0)
+
+	paginatedData, err := paginate.New(collectionTransactions).
+		Page(1).
+		Limit(20).
+		Aggregate(match, project, group)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
-	var showsWithInfo []bson.M
-	if err = showInfoCursor.All(ctx, &showsWithInfo); err != nil {
-		panic(err)
+
+	for _, raw := range paginatedData.Data {
+		day := new(models.Day)
+		if marshallErr := bson.Unmarshal(raw, &day); marshallErr == nil {
+			days = append(days, day)
+		}
+
 	}
-	fmt.Println(showsWithInfo)
-	return nil, nil
+
+	return days, nil
 }
 
 func (r *Repository) GetWalletAmountWeekByID(id string, week models.Week) ([]*models.Day, error) {

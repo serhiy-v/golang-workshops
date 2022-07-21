@@ -1,7 +1,7 @@
 package models
 
 type Day struct {
-	Date    string `json:"date"`
+	Date    string `bson:"_id"`
 	Income  int
 	Outcome int
 }
