@@ -337,14 +337,20 @@ func (s *Server) GetWalletAmountDayByID(w http.ResponseWriter, r *http.Request) 
 
 	switch db {
 	case "mongo":
-		days, err := s.servicePostgre.GetWalletAmountDayByID(id, day)
+		days, err := s.serviceMongo.GetWalletAmountDayByID(id, day)
 		if err != nil {
 			http.Error(w, "Unable to get amount per day:", http.StatusForbidden)
 			log.Printf("Unable to get amount per day:: %v\n", err)
 			return
 		}
 
-		w.Write([]byte(fmt.Sprintf("Amount:%v", days)))
+		for _, day := range days {
+			err = json.NewEncoder(w).Encode(day)
+			if err != nil {
+				log.Printf("Unable to encode transaction: %v\n", err)
+				return
+			}
+		}
 	case "postgre":
 		days, err := s.servicePostgre.GetWalletAmountDayByID(id, day)
 		if err != nil {
@@ -380,24 +386,29 @@ func (s *Server) GetWalletAmountWeekByID(w http.ResponseWriter, r *http.Request)
 
 	switch db {
 	case "mongo":
-		incomeAmount, outcomeAmount, err := s.serviceMongo.GetWalletAmountWeekByID(id, day)
+		days, err := s.servicePostgre.GetWalletAmountWeekByID(id, day)
 		if err != nil {
 			http.Error(w, "Unable to get amount per day:", http.StatusForbidden)
 			log.Printf("Unable to get amount per day:: %v\n", err)
 			return
 		}
 
-		w.Write([]byte(fmt.Sprintf("Amount:%v", incomeAmount, outcomeAmount)))
+		w.Write([]byte(fmt.Sprintf("Amount:%v", days)))
 	case "postgre":
-		incomeAmount, outcomeAmount, err := s.servicePostgre.GetWalletAmountWeekByID(id, day)
+		days, err := s.servicePostgre.GetWalletAmountWeekByID(id, day)
 		if err != nil {
 			http.Error(w, "Unable to get amount per day", http.StatusForbidden)
 			log.Printf("Unable to get amount per day: %v\n", err)
 			return
 		}
-		//value1 := incomeAmount
-		//value2 := outcomeAmount
-		w.Write([]byte(fmt.Sprintf("day:%v, incomeAmount:%v, outcomeAmount:%v", day, incomeAmount, outcomeAmount)))
+
+		for _, day := range days {
+			err = json.NewEncoder(w).Encode(day)
+			if err != nil {
+				log.Printf("Unable to encode transaction: %v\n", err)
+				return
+			}
+		}
 	default:
 		w.Write([]byte("invalid db"))
 	}

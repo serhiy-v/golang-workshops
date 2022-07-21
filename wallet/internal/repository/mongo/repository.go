@@ -2,7 +2,9 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/workshops/wallet/internal/repository/models"
@@ -159,37 +161,92 @@ func (r *Repository) GetTransactions() ([]*models.Transaction, error) {
 }
 
 func (r *Repository) CreateTransaction(transaction *models.Transaction) error {
-	//collectionWallet := r.Conn.Database("wallet").Collection("wallets")
-	//collectionTransactions := r.Conn.Database("wallet").Collection("transactions")
-	//
+	collectionWallet := r.Conn.Database("wallet").Collection("wallets")
+	collectionTransactions := r.Conn.Database("wallet").Collection("transactions")
+
 	//var session mongo.Session
-	//
+
+	transaction.ID = primitive.NewObjectID().String()
+	t := time.Now()
+	transaction.Date = t.String()
+
+	_, err := collectionWallet.UpdateOne(ctx, bson.M{"_id": transaction.CreditWalletID}, bson.D{{"$inc", bson.D{{"balance", -transaction.Amount}}}}, options.Update().SetUpsert(false))
+	if err != nil {
+		return err
+	}
+
+	_, err = collectionWallet.UpdateOne(ctx, bson.M{"_id": transaction.DebitWalletID}, bson.D{{"$inc", bson.D{{"balance", transaction.Amount}}}}, options.Update().SetUpsert(false))
+	if err != nil {
+		return err
+	}
+
+	_, err = collectionTransactions.InsertOne(ctx, transaction)
+	if err != nil {
+		return err
+	}
+
 	//session, err := r.Conn.StartSession()
 	//if err != nil {
 	//	return err
 	//}
 	//
-	//err = session.StartTransaction()
-	//if err != nil {
-	//	return err
-	//}
+	//defer session.EndSession(ctx)
 	//
 	//err = mongo.WithSession(ctx, session, func(sc mongo.SessionContext) error {
-	//	_, err = collectionWallet.UpdateOne(sc, bson.M{"_id": transaction.CreditWalletID}, bson.M{"$inc": { "balance": }})
+	//	err = session.StartTransaction()
 	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	_, err = collectionWallet.UpdateOne(sc, bson.M{"_id": transaction.CreditWalletID}, bson.D{{"$inc", bson.D{{"balance", -transaction.Amount}}}}, options.Update().SetUpsert(false))
+	//	if err != nil {
+	//		session.AbortTransaction(sc)
+	//		return err
+	//	}
+	//
+	//	_, err = collectionWallet.UpdateOne(sc, bson.M{"_id": transaction.DebitWalletID}, bson.D{{"$inc", bson.D{{"balance", transaction.Amount}}}}, options.Update().SetUpsert(false))
+	//	if err != nil {
+	//		session.AbortTransaction(sc)
+	//		return err
+	//	}
+	//
+	//	_, err = collectionTransactions.InsertOne(ctx, transaction)
+	//	if err != nil {
+	//		session.AbortTransaction(sc)
+	//		return err
+	//	}
+	//
+	//	if err = session.CommitTransaction(sc); err != nil {
 	//		session.AbortTransaction(sc)
 	//		return err
 	//	}
 	//
 	//	return nil
 	//})
+
 	return nil
 }
 
 func (r *Repository) GetWalletAmountDayByID(id string, week models.Week) ([]*models.Day, error) {
+	collectionTransactions := r.Conn.Database("wallet").Collection("transactions")
+
+	matchStage := bson.D{{"$match", bson.D{{"debitwalletid", id}}}}
+	groupStage := bson.D{{"$group", bson.D{{"_id", bson.D{{"$dateFromString", bson.D{
+		{"dateString", "$b"},
+		{"format", "%d/%m/%Y"}}}}}, {"total", bson.D{{"$sum", "$amount"}}}}}}
+
+	showInfoCursor, err := collectionTransactions.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage})
+	if err != nil {
+		panic(err)
+	}
+	var showsWithInfo []bson.M
+	if err = showInfoCursor.All(ctx, &showsWithInfo); err != nil {
+		panic(err)
+	}
+	fmt.Println(showsWithInfo)
 	return nil, nil
 }
 
-func (r *Repository) GetWalletAmountWeekByID(id string, day models.Week) (int, int, error) {
-	return 0, 0, nil
+func (r *Repository) GetWalletAmountWeekByID(id string, week models.Week) ([]*models.Day, error) {
+	return nil, nil
 }

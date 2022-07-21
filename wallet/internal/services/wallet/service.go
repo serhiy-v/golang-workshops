@@ -14,7 +14,7 @@ type Repository interface {
 	GetTransactions() ([]*models.Transaction, error)
 	CreateTransaction(transaction *models.Transaction) error
 	GetWalletAmountDayByID(id string, week models.Week) ([]*models.Day, error)
-	GetWalletAmountWeekByID(id string, day models.Week) (int, int, error)
+	GetWalletAmountWeekByID(id string, week models.Week) ([]*models.Day, error)
 }
 
 // Service holds calendar business logic and works with repository.
@@ -68,6 +68,6 @@ func (s *Service) GetWalletAmountDayByID(id string, week models.Week) ([]*models
 	return s.repo.GetWalletAmountDayByID(id, week)
 }
 
-func (s *Service) GetWalletAmountWeekByID(id string, day models.Week) (int, int, error) {
-	return s.repo.GetWalletAmountWeekByID(id, day)
+func (s *Service) GetWalletAmountWeekByID(id string, week models.Week) ([]*models.Day, error) {
+	return s.repo.GetWalletAmountWeekByID(id, week)
 }

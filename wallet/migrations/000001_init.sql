@@ -29,7 +29,7 @@ create table if not exists transactions
     fee_wallet_id    uuid      not null,
     credit_user_id   uuid      not null,
     debit_user_id    uuid      not null,
-    date             date      not null,
+    date             timestamp not null,
 
 
     constraint transactions_users_id_fk
